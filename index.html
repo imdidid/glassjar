@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>glassjar alpha 0.4.4.7</title>
+  <title>glassjar alpha 0.4.5</title>
   <style>
-    :root{--bg:#000;--line:#fff;--text:#fff;--muted:#b8b8b8;--font:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+    :root{--bg:#000;--line:#fff;--text:#fff;--muted:#b8b8b8;--font:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font)}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-text-size-adjust:100%}
     .wrap{width:min(1080px,100%);margin:0 auto;padding:24px;display:grid;gap:14px}
     .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
     .top-right{display:grid;justify-items:end;gap:8px}
@@ -34,14 +34,15 @@
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .cut-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
     .percentile-grid{display:grid;grid-template-columns:minmax(120px,220px);gap:8px;margin-top:8px}
-    .percentile-grid.hidden,.cut-grid.hidden{display:none}
+    .percentile-grid.hidden,.cut-grid.hidden,.skip4-option.hidden{display:none}
     label{display:grid;gap:5px;color:var(--muted);font-size:12px}
     .field-note{color:#777;font-size:11px;line-height:1.35}
     .checkline{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px}
-    .checkline input{appearance:none;width:15px;height:15px;padding:0;border:1px solid var(--line);background:#000;display:grid;place-items:center}
-    .checkline input:checked::after{content:"";width:7px;height:7px;background:#fff;display:block}
-    input,button,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:0;background:#000;color:var(--text);font:inherit}
-    input:disabled,select:disabled{border-color:#555;color:#666}
+    .checkline input{appearance:none;-webkit-appearance:none;accent-color:#fff;width:15px;height:15px;padding:0;border:1px solid #fff;background-color:#000;color:#fff;display:grid;place-items:center;forced-color-adjust:none}
+    .checkline input:checked{background-color:#000;border-color:#fff}
+    .checkline input:checked::after{content:"";width:7px;height:7px;background-color:#fff;display:block}
+    input,button,select{width:100%;padding:10px;border:1px solid #fff;border-radius:0;background-color:#000;color:#fff;font:inherit;accent-color:#fff;-webkit-text-fill-color:#fff}
+    input:disabled,select:disabled{border-color:#555;color:#666;background-color:#000;-webkit-text-fill-color:#666;opacity:1}
     button{cursor:pointer;font-weight:700}
     button:hover{background:#fff;color:#000}
     .settings-button{width:auto;border:0;padding:0;background:transparent;color:var(--text);display:flex;align-items:center;gap:6px;font-size:13px}
@@ -64,8 +65,8 @@
     .subject-card.off{border-color:#555}
     .subject-bars{display:grid;gap:8px;margin-top:10px}
     .subject-row{display:grid;grid-template-columns:52px 1fr 64px;gap:8px;align-items:center;font-size:13px}
-    .bar{height:10px;border:1px solid var(--line);background:#000}
-    .bar span{display:block;height:100%;background:#fff}
+    .bar{height:10px;border:1px solid #fff;background-color:#000;forced-color-adjust:none}
+    .bar span{display:block;height:100%;background-color:#fff;forced-color-adjust:none}
     .record{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;border:1px solid var(--line);padding:9px;font-size:13px}
     .record small{display:block;color:var(--muted);margin-top:3px}
     .record button{padding:7px 9px}
@@ -94,7 +95,7 @@
     <header class="top">
       <div>
         <h1>glassjar</h1>
-        <p class="subtitle">alpha 0.4.4.7</p>
+        <p class="subtitle">alpha 0.4.5</p>
       </div>
       <div class="top-right">
         <button class="settings-button" id="open-settings" type="button" aria-haspopup="dialog">
@@ -231,7 +232,7 @@
     const EXAM_DAY = new Date("2026-11-19T00:00:00+09:00");
     const ENGINE_GAMMA = 1.25;
     const ENGINE_NAME = "Mandarin 1.1 Standard";
-    const STORAGE_KEY = "glassjar.0.4.4.7";
+    const STORAGE_KEY = "glassjar.0.4.5";
     const DEFAULT_SUBJECTS = {
       korean: { label: "국어", slots: 28, target: 91, type: "percentile" },
       math: { label: "수학", slots: 47, target: 98, type: "percentile" },
@@ -268,7 +269,7 @@
 
     function migrateState() {
       if (localStorage.getItem(STORAGE_KEY)) return;
-      const old = localStorage.getItem("glassjar.0.4.4.6a") || localStorage.getItem("glassjar.0.4.4.6") || localStorage.getItem("glassjar.0.4.4.5") || localStorage.getItem("glassjar.0.4.4.4") || localStorage.getItem("glassjar.0.4.4.3") || localStorage.getItem("glassjar.0.4.4.2") || localStorage.getItem("glassjar.0.4.4.1") || localStorage.getItem("glassjar.0.4.4") || localStorage.getItem("glassjar.0.4.3.4") || localStorage.getItem("glassjar.0.4.3.3") || localStorage.getItem("glassjar.0.4.3.2") || localStorage.getItem("glassjar.0.4.3.1") || localStorage.getItem("glassjar.0.4.3") || localStorage.getItem("glassjar.0.4.2.2") || localStorage.getItem("glassjar.0.4.2.1") || localStorage.getItem("glassjar.0.4.2") || localStorage.getItem("glassjar.0.4.1.1") || localStorage.getItem("glassjar.0.4.1") || localStorage.getItem("glassjar.0.4.0") || localStorage.getItem("glassjar.0.3.1") || localStorage.getItem("glassjar.0.3.0") || localStorage.getItem("glassjar.0.2.4.3") || localStorage.getItem("glassjar.0.2.4.2") || localStorage.getItem("glassjar.0.2.4.1") || localStorage.getItem("glassjar.0.2.4") || localStorage.getItem("glassjar.0.2.3") || localStorage.getItem("glassjar.0.2.2") || localStorage.getItem("glassjar.0.2.1") || localStorage.getItem("glassjar.0.2.0") || localStorage.getItem("glassjar.0.1.5.1") || localStorage.getItem("glassjar.0.1.5") || localStorage.getItem("glassjar.0.1.4") || localStorage.getItem("glassjar.0.1.3");
+      const old = localStorage.getItem("glassjar.0.4.4.7") || localStorage.getItem("glassjar.0.4.4.6a") || localStorage.getItem("glassjar.0.4.4.6") || localStorage.getItem("glassjar.0.4.4.5") || localStorage.getItem("glassjar.0.4.4.4") || localStorage.getItem("glassjar.0.4.4.3") || localStorage.getItem("glassjar.0.4.4.2") || localStorage.getItem("glassjar.0.4.4.1") || localStorage.getItem("glassjar.0.4.4") || localStorage.getItem("glassjar.0.4.3.4") || localStorage.getItem("glassjar.0.4.3.3") || localStorage.getItem("glassjar.0.4.3.2") || localStorage.getItem("glassjar.0.4.3.1") || localStorage.getItem("glassjar.0.4.3") || localStorage.getItem("glassjar.0.4.2.2") || localStorage.getItem("glassjar.0.4.2.1") || localStorage.getItem("glassjar.0.4.2") || localStorage.getItem("glassjar.0.4.1.1") || localStorage.getItem("glassjar.0.4.1") || localStorage.getItem("glassjar.0.4.0") || localStorage.getItem("glassjar.0.3.1") || localStorage.getItem("glassjar.0.3.0") || localStorage.getItem("glassjar.0.2.4.3") || localStorage.getItem("glassjar.0.2.4.2") || localStorage.getItem("glassjar.0.2.4.1") || localStorage.getItem("glassjar.0.2.4") || localStorage.getItem("glassjar.0.2.3") || localStorage.getItem("glassjar.0.2.2") || localStorage.getItem("glassjar.0.2.1") || localStorage.getItem("glassjar.0.2.0") || localStorage.getItem("glassjar.0.1.5.1") || localStorage.getItem("glassjar.0.1.5") || localStorage.getItem("glassjar.0.1.4") || localStorage.getItem("glassjar.0.1.3");
       if (old) localStorage.setItem(STORAGE_KEY, old);
     }
 
@@ -398,18 +399,18 @@
               <section class="subject-card" data-subject="${key}">
             <div class="subject-options">
               <label class="checkline"><input name="${key}-taken" type="checkbox" checked> ${label} 응시</label>
-              <label class="checkline"><input name="${key}-skip4" type="checkbox"> 4컷 생략</label>
-              <label class="checkline"><input name="${key}-direct-percentile" type="checkbox"> 백분위로 입력</label>
+              <label class="checkline"><input name="${key}-use-cutoffs" type="checkbox"> 등급컷 입력</label>
+              <label class="checkline skip4-option hidden" data-skip4-option="${key}"><input name="${key}-skip4" type="checkbox"> 4컷 생략</label>
             </div>
-            <div class="cut-grid" data-cut-grid="${key}">
+            <div class="percentile-grid" data-percentile-grid="${key}">
+              <label>백분위<input name="${key}-percentile" type="number" min="0" max="100" step="0.1"></label>
+            </div>
+            <div class="cut-grid hidden" data-cut-grid="${key}">
               <label>원점수<input name="${key}-raw" type="number" min="0" max="100" step="1"></label>
               <label>1컷<input name="${key}-cut1" type="number" min="0" max="100" step="1"></label>
               <label>2컷<input name="${key}-cut2" type="number" min="0" max="100" step="1"></label>
               <label>3컷<input name="${key}-cut3" type="number" min="0" max="100" step="1"></label>
               <label>4컷<input name="${key}-cut4" type="number" min="0" max="100" step="1"></label>
-            </div>
-            <div class="percentile-grid hidden" data-percentile-grid="${key}">
-              <label>백분위<input name="${key}-percentile" type="number" min="0" max="100" step="0.1"></label>
             </div>
           </section>
         `;
@@ -439,7 +440,7 @@
       subjectKeys.forEach((key) => {
         document.querySelector(`[name="${key}-taken"]`).addEventListener("change", () => syncSubjectEnabled(key));
         document.querySelector(`[name="${key}-skip4"]`)?.addEventListener("change", () => syncSubjectEnabled(key));
-        document.querySelector(`[name="${key}-direct-percentile"]`)?.addEventListener("change", () => syncSubjectEnabled(key));
+        document.querySelector(`[name="${key}-use-cutoffs"]`)?.addEventListener("change", () => syncSubjectEnabled(key));
       });
     }
 
@@ -541,8 +542,8 @@
           return;
         }
 
-        const directPercentile = !!form.get(`${key}-direct-percentile`);
-        if (directPercentile) {
+        const useCutoffs = !!form.get(`${key}-use-cutoffs`);
+        if (!useCutoffs) {
           const percentile = requiredNumber(form, `${key}-percentile`, `${appSubjectLabel(key)} 백분위`);
           if (percentile < 0 || percentile > 100) throw new Error(`${appSubjectLabel(key)} 백분위는 0~100 사이여야 합니다.`);
           scores[key] = { taken: true, inputMode: "percentile", percentile };
@@ -972,16 +973,16 @@
           document.querySelector(`[name="${key}-grade"]`).value = score.grade;
           return;
         }
-        const directPercentile = score.inputMode === "percentile" || !Array.isArray(score.cutoffs);
-        document.querySelector(`[name="${key}-direct-percentile"]`).checked = directPercentile;
-        if (directPercentile) {
-          document.querySelector(`[name="${key}-percentile"]`).value = score.percentile ?? "";
-        } else {
+        const useCutoffs = score.inputMode === "cutoffs" && Array.isArray(score.cutoffs);
+        document.querySelector(`[name="${key}-use-cutoffs"]`).checked = useCutoffs;
+        if (useCutoffs) {
           document.querySelector(`[name="${key}-raw"]`).value = score.raw;
           [1, 2, 3, 4].forEach((grade, index) => {
             document.querySelector(`[name="${key}-cut${grade}"]`).value = score.cutoffs[index] ?? "";
           });
           document.querySelector(`[name="${key}-skip4"]`).checked = !!score.skip4;
+        } else {
+          document.querySelector(`[name="${key}-percentile"]`).value = score.percentile ?? "";
         }
         syncSubjectEnabled(key);
       });
@@ -1016,8 +1017,8 @@
         document.querySelector(`[name="${key}-taken"]`).checked = takenDefault;
         const skip4 = document.querySelector(`[name="${key}-skip4"]`);
         if (skip4) skip4.checked = false;
-        const directPercentile = document.querySelector(`[name="${key}-direct-percentile"]`);
-        if (directPercentile) directPercentile.checked = false;
+        const useCutoffs = document.querySelector(`[name="${key}-use-cutoffs"]`);
+        if (useCutoffs) useCutoffs.checked = false;
         card.querySelectorAll("input:not([type='checkbox'])").forEach((input) => {
           input.value = "";
         });
@@ -1055,7 +1056,7 @@
     function syncSubjectEnabled(key) {
       const card = document.querySelector(`[data-subject="${key}"]`);
       const checked = document.querySelector(`[name="${key}-taken"]`).checked;
-      const directPercentile = !!document.querySelector(`[name="${key}-direct-percentile"]`)?.checked;
+      const useCutoffs = !!document.querySelector(`[name="${key}-use-cutoffs"]`)?.checked;
       card.classList.toggle("off", !checked);
       card.querySelectorAll("input:not([type='checkbox']), select").forEach((input) => {
         input.disabled = !checked;
@@ -1064,17 +1065,19 @@
       const cut4 = document.querySelector(`[name="${key}-cut4"]`);
       const cutGrid = document.querySelector(`[data-cut-grid="${key}"]`);
       const percentileGrid = document.querySelector(`[data-percentile-grid="${key}"]`);
-      cutGrid?.classList.toggle("hidden", directPercentile);
-      percentileGrid?.classList.toggle("hidden", !directPercentile);
+      const skip4Option = document.querySelector(`[data-skip4-option="${key}"]`);
+      cutGrid?.classList.toggle("hidden", !useCutoffs);
+      percentileGrid?.classList.toggle("hidden", useCutoffs);
+      skip4Option?.classList.toggle("hidden", !useCutoffs);
       cutGrid?.querySelectorAll("input").forEach((input) => {
-        input.disabled = !checked || directPercentile;
+        input.disabled = !checked || !useCutoffs;
       });
       percentileGrid?.querySelectorAll("input").forEach((input) => {
-        input.disabled = !checked || !directPercentile;
+        input.disabled = !checked || useCutoffs;
       });
       if (skip4 && cut4) {
-        skip4.disabled = !checked || directPercentile;
-        cut4.disabled = !checked || directPercentile || skip4.checked;
+        skip4.disabled = !checked || !useCutoffs;
+        cut4.disabled = !checked || !useCutoffs || skip4.checked;
         if (skip4.checked) cut4.value = "";
       }
     }
