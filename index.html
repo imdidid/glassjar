@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>glassjar alpha 0.4.5</title>
+  <title>glassjar alpha 0.5.0</title>
   <style>
     :root{--bg:#000;--line:#fff;--text:#fff;--muted:#b8b8b8;--font:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark}
     *{box-sizing:border-box}
@@ -95,7 +95,7 @@
     <header class="top">
       <div>
         <h1>glassjar</h1>
-        <p class="subtitle">alpha 0.4.5</p>
+        <p class="subtitle">alpha 0.5.0</p>
       </div>
       <div class="top-right">
         <button class="settings-button" id="open-settings" type="button" aria-haspopup="dialog">
@@ -162,7 +162,7 @@
         <section class="panel prediction-panel">
           <div class="panel-head prediction-head">
             <h2>예측</h2>
-            <span class="engine-label" id="engine-label">Mandarin 1.1 Standard</span>
+            <span class="engine-label" id="engine-label">Mandarin 1.2 Pro</span>
           </div>
           <div class="kpi prediction-kpi">
             <div class="card">
@@ -170,7 +170,7 @@
               <div class="value" id="forecast-date">-</div>
             </div>
             <div class="card">
-              <p>신뢰도</p>
+              <p>오차범위</p>
               <div class="value" id="confidence">-</div>
             </div>
             <div class="card">
@@ -231,8 +231,10 @@
   <script>
     const EXAM_DAY = new Date("2026-11-19T00:00:00+09:00");
     const ENGINE_GAMMA = 1.25;
-    const ENGINE_NAME = "Mandarin 1.1 Standard";
-    const STORAGE_KEY = "glassjar.0.4.5";
+    const ENGINE_NAME = "Mandarin 1.2 Pro";
+    const STORAGE_KEY = "glassjar.0.5.0";
+    const MODEL_EPSILON_FALLBACK = 1e-6;
+    const MODEL_SAFE_SIGMA_WEIGHT = 0.5;
     const DEFAULT_SUBJECTS = {
       korean: { label: "국어", slots: 28, target: 91, type: "percentile" },
       math: { label: "수학", slots: 47, target: 98, type: "percentile" },
@@ -269,7 +271,7 @@
 
     function migrateState() {
       if (localStorage.getItem(STORAGE_KEY)) return;
-      const old = localStorage.getItem("glassjar.0.4.4.7") || localStorage.getItem("glassjar.0.4.4.6a") || localStorage.getItem("glassjar.0.4.4.6") || localStorage.getItem("glassjar.0.4.4.5") || localStorage.getItem("glassjar.0.4.4.4") || localStorage.getItem("glassjar.0.4.4.3") || localStorage.getItem("glassjar.0.4.4.2") || localStorage.getItem("glassjar.0.4.4.1") || localStorage.getItem("glassjar.0.4.4") || localStorage.getItem("glassjar.0.4.3.4") || localStorage.getItem("glassjar.0.4.3.3") || localStorage.getItem("glassjar.0.4.3.2") || localStorage.getItem("glassjar.0.4.3.1") || localStorage.getItem("glassjar.0.4.3") || localStorage.getItem("glassjar.0.4.2.2") || localStorage.getItem("glassjar.0.4.2.1") || localStorage.getItem("glassjar.0.4.2") || localStorage.getItem("glassjar.0.4.1.1") || localStorage.getItem("glassjar.0.4.1") || localStorage.getItem("glassjar.0.4.0") || localStorage.getItem("glassjar.0.3.1") || localStorage.getItem("glassjar.0.3.0") || localStorage.getItem("glassjar.0.2.4.3") || localStorage.getItem("glassjar.0.2.4.2") || localStorage.getItem("glassjar.0.2.4.1") || localStorage.getItem("glassjar.0.2.4") || localStorage.getItem("glassjar.0.2.3") || localStorage.getItem("glassjar.0.2.2") || localStorage.getItem("glassjar.0.2.1") || localStorage.getItem("glassjar.0.2.0") || localStorage.getItem("glassjar.0.1.5.1") || localStorage.getItem("glassjar.0.1.5") || localStorage.getItem("glassjar.0.1.4") || localStorage.getItem("glassjar.0.1.3");
+      const old = localStorage.getItem("glassjar.0.4.5") || localStorage.getItem("glassjar.0.4.4.7") || localStorage.getItem("glassjar.0.4.4.6a") || localStorage.getItem("glassjar.0.4.4.6") || localStorage.getItem("glassjar.0.4.4.5") || localStorage.getItem("glassjar.0.4.4.4") || localStorage.getItem("glassjar.0.4.4.3") || localStorage.getItem("glassjar.0.4.4.2") || localStorage.getItem("glassjar.0.4.4.1") || localStorage.getItem("glassjar.0.4.4") || localStorage.getItem("glassjar.0.4.3.4") || localStorage.getItem("glassjar.0.4.3.3") || localStorage.getItem("glassjar.0.4.3.2") || localStorage.getItem("glassjar.0.4.3.1") || localStorage.getItem("glassjar.0.4.3") || localStorage.getItem("glassjar.0.4.2.2") || localStorage.getItem("glassjar.0.4.2.1") || localStorage.getItem("glassjar.0.4.2") || localStorage.getItem("glassjar.0.4.1.1") || localStorage.getItem("glassjar.0.4.1") || localStorage.getItem("glassjar.0.4.0") || localStorage.getItem("glassjar.0.3.1") || localStorage.getItem("glassjar.0.3.0") || localStorage.getItem("glassjar.0.2.4.3") || localStorage.getItem("glassjar.0.2.4.2") || localStorage.getItem("glassjar.0.2.4.1") || localStorage.getItem("glassjar.0.2.4") || localStorage.getItem("glassjar.0.2.3") || localStorage.getItem("glassjar.0.2.2") || localStorage.getItem("glassjar.0.2.1") || localStorage.getItem("glassjar.0.2.0") || localStorage.getItem("glassjar.0.1.5.1") || localStorage.getItem("glassjar.0.1.5") || localStorage.getItem("glassjar.0.1.4") || localStorage.getItem("glassjar.0.1.3");
       if (old) localStorage.setItem(STORAGE_KEY, old);
     }
 
@@ -711,15 +713,13 @@
     function buildPrediction(records) {
       const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
       const subjectState = buildSubjectState(sorted);
-      const baselineState = buildBaselineState(sorted);
       const actualGem = subjectKeys.reduce((sum, key) => sum + subjectState[key].actualGem, 0);
-      const daysLeft = Math.max(0, (targetDay().getTime() - Date.now()) / 86400000);
-      const predictedSubjects = predictSubjects(sorted, subjectState, daysLeft);
-      const pace = paceStatus(baselineState, subjectState);
-      const paceTrend = paceTrendStatus(sorted, baselineState, pace);
-      const forecastDate = forecastGoalDate(baselineState, subjectState);
-      const confidence = modelConfidence(sorted, predictedSubjects);
-      const bottlenecks = detectBottlenecks(predictedSubjects);
+      const predictedSubjects = subjectState;
+      const pace = distancePaceStatus(sorted);
+      const paceTrend = distancePaceTrend(sorted);
+      const forecastDate = forecastGoalDateFromRecords(sorted);
+      const confidence = distanceModelConfidence(sorted);
+      const bottlenecks = distanceBottlenecks(sorted);
       const byTargetDay = forecastDate && dateValue(forecastDate) <= targetDay().getTime() ? "목표일 전 100% 도달권" : "목표일 이후 도달 예상";
       const forecastLabel = forecastDate || "미도달 예상";
       return {
@@ -730,7 +730,7 @@
         forecastDate: forecastLabel,
         confidence,
         bottlenecks,
-        subjects: predictedSubjects,
+        subjects: subjectState,
         summary: [
           `${pace.fullText}`,
           `${paceTrend.fullText}`,
@@ -782,108 +782,213 @@
         .sort((a, b) => a.date.localeCompare(b.date));
     }
 
-    function predictSubjects(records, subjectState, daysLeft) {
-      return subjectKeys.reduce((acc, key) => {
-        const subject = subjectState[key];
-        const slope = weightedSubjectSlope(subject.points);
-        const volatility = subjectVolatility(subject.points);
-        const remaining = Math.max(0, subject.targetUnits - subject.actualUnits);
-        const damping = subject.targetUnits ? clamp(remaining / subject.targetUnits, 0.18, 1) : 0;
-        const volatilityPenalty = Math.min(remaining, volatility * 0.35);
-        const predictedUnits = clamp(subject.actualUnits + slope * daysLeft * damping - volatilityPenalty, 0, subject.targetUnits);
-        acc[key] = {
-          ...subject,
-          slope,
-          volatility,
-          predictedUnits,
-          predictedGem: unitsToSubjectGem(predictedUnits, key),
-          gapUnits: Math.max(0, subject.targetUnits - predictedUnits)
-        };
-        return acc;
-      }, {});
+    function modelEpsilon() {
+      return 1 / Math.max(1, totalGemSlots());
     }
 
-    function weightedSubjectSlope(points) {
-      if (points.length < 2) return 0;
-      let weighted = 0;
-      let weights = 0;
+    function clampModelProgress(progress) {
+      return clamp(progress, 0, 1 - modelEpsilon());
+    }
+
+    function progressToDistance(progress) {
+      const p = clampModelProgress(progress);
+      return -Math.log(1 - p);
+    }
+
+    function targetModelDistance() {
+      return progressToDistance(1);
+    }
+
+    function recordProgress(record) {
+      const target = totalTargetUnits();
+      if (!record || !target) return 0;
+      return clamp(recordUnits(record) / target, 0, 1);
+    }
+
+    function subjectProgress(key, units) {
+      const target = subjectTargetUnits(key);
+      if (!target) return 0;
+      return clamp(units / target, 0, 1);
+    }
+
+    function modelPoints(records) {
+      const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
+      const deduped = [];
+      sorted.forEach((record) => {
+        const last = deduped.at(-1);
+        if (last && last.date === record.date) deduped[deduped.length - 1] = record;
+        else deduped.push(record);
+      });
+      return deduped.map((record) => {
+        const progress = recordProgress(record);
+        return {
+          date: record.date,
+          day: dateValue(record.date) / 86400000,
+          progress,
+          distance: progressToDistance(progress)
+        };
+      });
+    }
+
+    function velocitySamples(points) {
+      const samples = [];
       for (let index = 1; index < points.length; index += 1) {
         const prev = points[index - 1];
         const next = points[index];
-        const days = Math.max(1, (dateValue(next.date) - dateValue(prev.date)) / 86400000);
-        const weight = index / (points.length - 1);
-        weighted += ((next.units - prev.units) / days) * weight;
-        weights += weight;
+        const days = Math.max(1, next.day - prev.day);
+        const velocity = (next.distance - prev.distance) / days;
+        if (Number.isFinite(velocity)) samples.push({ velocity, index });
       }
-      return weighted / Math.max(weights, 1);
+      return samples;
     }
 
-    function subjectVolatility(points) {
-      if (points.length < 3) return 0;
-      const deltas = [];
-      for (let index = 1; index < points.length; index += 1) {
-        deltas.push(points[index].units - points[index - 1].units);
-      }
-      const mean = deltas.reduce((sum, value) => sum + value, 0) / deltas.length;
-      const variance = deltas.reduce((sum, value) => sum + (value - mean) ** 2, 0) / deltas.length;
+    function weightedVelocity(samples) {
+      if (!samples.length) return null;
+      let weighted = 0;
+      let weights = 0;
+      samples.forEach((sample, index) => {
+        const weight = index + 1;
+        weighted += sample.velocity * weight;
+        weights += weight;
+      });
+      return weighted / Math.max(weights, MODEL_EPSILON_FALLBACK);
+    }
+
+    function velocitySigma(samples, mean) {
+      if (samples.length < 2 || mean === null) return 0;
+      const variance = samples.reduce((sum, sample) => {
+        return sum + (sample.velocity - mean) ** 2;
+      }, 0) / samples.length;
       return Math.sqrt(variance);
     }
 
-    function forecastGoalDate(baseline, currentState) {
-      if (!baseline.date) return null;
-      const start = dateValue(baseline.date);
-      const end = targetDay().getTime();
-      const duration = Math.max(1, end - start);
-      const targetUnits = totalTargetUnits();
-      const actualUnits = subjectKeys.reduce((sum, key) => sum + currentState[key].actualUnits, 0);
-      if (actualUnits >= targetUnits) return new Date().toISOString().slice(0, 10);
-      const currentT = clamp((Date.now() - start) / duration, 0, 2);
-      const progress = clamp((actualUnits - baseline.units) / Math.max(1e-6, targetUnits - baseline.units), 0, 1);
-      const equivalentT = progress ** (1 / ENGINE_GAMMA);
-      const lag = currentT - equivalentT;
-      const forecastT = 1 + lag;
-      const forecast = new Date(start + duration * forecastT);
-      return forecast.toISOString().slice(0, 10);
+    function forecastDateByDistance(currentDistance, velocity) {
+      const target = targetModelDistance();
+      const remaining = Math.max(0, target - currentDistance);
+      if (remaining <= 0) return new Date().toISOString().slice(0, 10);
+      if (!Number.isFinite(velocity) || velocity <= MODEL_EPSILON_FALLBACK) return null;
+      const days = remaining / velocity;
+      return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
     }
 
-    function paceStatus(baseline, currentState) {
-      const targetUnits = totalTargetUnits();
-      const actualUnits = subjectKeys.reduce((sum, key) => sum + currentState[key].actualUnits, 0);
-      const baselineUnits = baseline.units || actualUnits;
-      const start = baseline.date ? dateValue(baseline.date) : Date.now();
-      const end = targetDay().getTime();
-      const elapsed = clamp((Date.now() - start) / Math.max(1, end - start), 0, 1);
-      const curve = elapsed ** ENGINE_GAMMA;
-      const expectedUnits = baselineUnits + (targetUnits - baselineUnits) * curve;
-      const gapUnits = actualUnits - expectedUnits;
-      const gapGem = Math.round(unitsToGemDelta(gapUnits));
-      const amount = Math.abs(gapGem);
-      const direction = gapGem >= 0 ? "초과" : "부족";
-      const status = gapGem > 0 ? "star" : gapGem < 0 ? "warning" : "check";
+    function forecastGoalDateFromRecords(records) {
+      const points = modelPoints(records);
+      if (!points.length) return null;
+      const latest = points.at(-1);
+      if (latest.progress >= 1 - modelEpsilon()) return new Date().toISOString().slice(0, 10);
+      const samples = velocitySamples(points);
+      const velocity = weightedVelocity(samples);
+      if (points.length < 2 || velocity === null || velocity <= MODEL_EPSILON_FALLBACK) return null;
+      return forecastDateByDistance(latest.distance, velocity);
+    }
+
+    function distancePaceStatus(records) {
+      const points = modelPoints(records);
+      if (!points.length) {
+        return {
+          status: "check",
+          delta: 0,
+          gapGem: 0,
+          text: "0 부족",
+          fullText: "기록을 추가하면 페이스를 계산합니다."
+        };
+      }
+      if (points.length < 2) {
+        return {
+          status: "check",
+          delta: 0,
+          gapGem: 0,
+          text: "기준점",
+          fullText: "기록 1회차입니다. 다음 기록부터 속도 기반 페이스를 계산합니다."
+        };
+      }
+      const latest = points.at(-1);
+      const samples = velocitySamples(points);
+      const velocity = weightedVelocity(samples);
+      const daysLeft = Math.max(0, (targetDay().getTime() - Date.now()) / 86400000);
+      const remaining = Math.max(0, targetModelDistance() - latest.distance);
+      const requiredVelocity = daysLeft > 0 ? remaining / daysLeft : null;
+      if (!requiredVelocity || velocity === null || velocity <= MODEL_EPSILON_FALLBACK) {
+        return {
+          status: "warning",
+          delta: -1,
+          gapGem: -1,
+          text: "위험",
+          fullText: "현재 목표 접근 속도로는 목표 도달 페이스를 계산할 수 없습니다."
+        };
+      }
+      const ratio = velocity / requiredVelocity;
+      if (ratio >= 1.2) {
+        return {
+          status: "star",
+          delta: 1,
+          gapGem: 1,
+          text: "빠름",
+          fullText: `현재 목표 접근 속도는 필요 속도의 ${ratio.toFixed(2)}배입니다.`
+        };
+      }
+      if (ratio >= 0.9) {
+        return {
+          status: "check",
+          delta: 0,
+          gapGem: 0,
+          text: "적정",
+          fullText: `현재 목표 접근 속도는 필요 속도의 ${ratio.toFixed(2)}배입니다.`
+        };
+      }
       return {
-        status,
-        delta: gapGem,
-        baselineDate: baseline.date,
-        expectedGem: unitsToGemAbsolute(expectedUnits),
-        gapGem,
-        text: `${amount} ${direction}`,
-        fullText: `오늘 도달했어야 했던 기준보다 ${amount} gem ${direction}합니다.`
+        status: "warning",
+        delta: -1,
+        gapGem: -1,
+        text: "부족",
+        fullText: `현재 목표 접근 속도는 필요 속도의 ${ratio.toFixed(2)}배입니다.`
       };
     }
 
-    function paceTrendStatus(records, baseline, currentPace) {
-      if (records.length < 2) {
-        return { value: 0, text: "", fullText: "페이스 변화량은 기록 2회차부터 계산합니다." };
+    function modelVolatility(records) {
+      const points = modelPoints(records);
+      const samples = velocitySamples(points);
+      const velocity = weightedVelocity(samples);
+      return velocitySigma(samples, velocity);
+    }
+
+    function conservativeForecastDate(records) {
+      const points = modelPoints(records);
+      if (points.length < 2) return null;
+      const latest = points.at(-1);
+      const samples = velocitySamples(points);
+      const velocity = weightedVelocity(samples);
+      const sigma = velocitySigma(samples, velocity);
+      if (velocity === null) return null;
+      const safeVelocity = velocity - MODEL_SAFE_SIGMA_WEIGHT * sigma;
+      return forecastDateByDistance(latest.distance, safeVelocity);
+    }
+
+    function distancePaceTrend(records) {
+      if (records.length < 3) {
+        return {
+          value: 0,
+          text: "",
+          fullText: "페이스 변화량은 기록 3회차부터 계산합니다."
+        };
       }
-      const previousRecords = records.slice(0, -1);
-      const previousState = buildSubjectState(previousRecords);
-      const previousPace = paceStatus(baseline, previousState);
-      const value = currentPace.gapGem - previousPace.gapGem;
-      const sign = value > 0 ? "+" : "";
+      const currentPoints = modelPoints(records);
+      const previousPoints = modelPoints(records.slice(0, -1));
+      const currentVelocity = weightedVelocity(velocitySamples(currentPoints));
+      const previousVelocity = weightedVelocity(velocitySamples(previousPoints));
+      if (currentVelocity === null || previousVelocity === null) {
+        return {
+          value: 0,
+          text: "",
+          fullText: "페이스 변화량을 계산할 수 없습니다."
+        };
+      }
+      const diff = currentVelocity - previousVelocity;
+      const sign = diff > 0 ? "+" : "";
       return {
-        value,
-        text: `전회 대비 ${sign}${value}`,
-        fullText: `페이스는 전회 대비 ${sign}${value} gem 변화했습니다.`
+        value: diff,
+        text: `전회 대비 ${sign}${diff.toFixed(4)}`,
+        fullText: `목표 접근 속도는 전회 대비 ${sign}${diff.toFixed(4)} 변화했습니다.`
       };
     }
 
@@ -896,24 +1001,97 @@
       return icons[status] || icons.check;
     }
 
-    function modelConfidence(records, subjectState) {
-      const pointCount = subjectKeys.reduce((sum, key) => sum + subjectState[key].points.length, 0);
-      const observedSubjects = subjectKeys.filter((key) => subjectState[key].observed).length;
-      const avgVolatility = subjectKeys.reduce((sum, key) => sum + (subjectState[key].volatility || 0), 0) / subjectKeys.length;
-      let score = 18 + Math.min(records.length, 8) * 6 + Math.min(pointCount, 24) * 1.5 + observedSubjects * 5;
-      score -= Math.min(24, avgVolatility * 4);
-      score = Math.round(clamp(score, 5, 92));
-      const label = score >= 75 ? "high" : score >= 52 ? "mid" : "low";
-      return { score, label };
+    function subjectForecastDate(key, records) {
+      const points = subjectPoints(key, records).map((point) => {
+        const progress = subjectProgress(key, point.units);
+        return {
+          date: point.date,
+          day: dateValue(point.date) / 86400000,
+          progress,
+          distance: progressToDistance(progress)
+        };
+      });
+      if (points.length < 2) return null;
+      const latest = points.at(-1);
+      if (latest.progress >= 1 - modelEpsilon()) return new Date().toISOString().slice(0, 10);
+      const samples = velocitySamples(points);
+      const velocity = weightedVelocity(samples);
+      return forecastDateByDistance(latest.distance, velocity);
     }
 
-    function detectBottlenecks(subjects) {
-      return Object.values(subjects)
-        .filter((subject) => subject.observed)
-        .sort((a, b) => b.gapUnits - a.gapUnits)
+    function distanceBottlenecks(records) {
+      return subjectKeys
+        .map((key) => {
+          const date = subjectForecastDate(key, records);
+          return {
+            key,
+            label: appSubjectLabel(key),
+            date,
+            value: date ? dateValue(date) : -Infinity
+          };
+        })
+        .filter((item) => item.date)
+        .sort((a, b) => b.value - a.value)
         .slice(0, 2)
-        .filter((subject) => subject.gapUnits > 0)
-        .map((subject) => subject.label);
+        .map((item) => item.label);
+    }
+
+    function forecastErrorRangeDays(records) {
+      const forecastDate = forecastGoalDateFromRecords(records);
+      if (!forecastDate) return null;
+      const points = modelPoints(records);
+      const samples = velocitySamples(points);
+      if (samples.length < 2) {
+        if (points.length < 2) return null;
+        return Math.round(clamp(45 - samples.length * 7, 7, 60));
+      }
+      const conservative = conservativeForecastDate(records);
+      if (conservative) {
+        const diff = Math.abs(dateValue(conservative) - dateValue(forecastDate)) / 86400000;
+        if (Number.isFinite(diff)) return Math.round(clamp(diff, 1, 365));
+      }
+      const velocity = weightedVelocity(samples);
+      const sigma = velocitySigma(samples, velocity);
+      if (velocity !== null && Math.abs(velocity) > MODEL_EPSILON_FALLBACK && samples.length) {
+        const latest = points.at(-1);
+        const remaining = Math.max(0, targetModelDistance() - latest.distance);
+        const safeVelocity = velocity - MODEL_SAFE_SIGMA_WEIGHT * sigma;
+        if (safeVelocity > MODEL_EPSILON_FALLBACK) {
+          const baseDays = remaining / velocity;
+          const safeDays = remaining / safeVelocity;
+          return Math.round(clamp(Math.abs(safeDays - baseDays), 1, 365));
+        }
+      }
+      if (points.length < 2) return null;
+      return Math.round(clamp(45 - samples.length * 7, 7, 60));
+    }
+
+    function distanceModelConfidence(records) {
+      const points = modelPoints(records);
+      const samples = velocitySamples(points);
+      const velocity = weightedVelocity(samples);
+      const sigma = velocitySigma(samples, velocity);
+      const recordScore = clamp(points.length / 5, 0, 1);
+      const sampleScore = clamp(samples.length / 4, 0, 1);
+      const observedSubjects = subjectKeys.filter((key) => {
+        return subjectPoints(key, records).length > 0;
+      }).length;
+      const coverageScore = observedSubjects / subjectKeys.length;
+      let stabilityScore = 0.5;
+      if (velocity !== null && Math.abs(velocity) > MODEL_EPSILON_FALLBACK) {
+        const instability = sigma / Math.abs(velocity);
+        stabilityScore = 1 - clamp(instability, 0, 1);
+      }
+      const score = Math.round(clamp(
+        (recordScore * 0.3 + sampleScore * 0.25 + coverageScore * 0.25 + stabilityScore * 0.2) * 100,
+        5,
+        95
+      ));
+      const errorDays = forecastErrorRangeDays(records);
+      return {
+        score,
+        label: errorDays === null ? "±--일" : `±${errorDays}일`
+      };
     }
 
     function totalTargetUnits() {
