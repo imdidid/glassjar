@@ -3,89 +3,104 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>glassjar alpha 0.5.0</title>
+  <title>glassjar 1.0 Public Beta 1</title>
   <style>
-    :root{--bg:#000;--line:#fff;--text:#fff;--muted:#b8b8b8;--font:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark}
+    :root{--bg:#0b0b0c;--surface:#131316;--surface-hover:#18181c;--line:#26262a;--line-strong:#3a3a40;--line-dim:#1c1c20;--text:#f1f1f3;--muted:#8e8e95;--muted-soft:#6a6a70;--accent:#a3e635;--warn:#f87171;--font:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark}
     *{box-sizing:border-box}
+    *:focus{outline:none}
+    *:focus-visible{outline:2px solid var(--line-strong);outline-offset:2px;border-radius:inherit}
     body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-text-size-adjust:100%}
-    .wrap{width:min(1080px,100%);margin:0 auto;padding:24px;display:grid;gap:14px}
+    .wrap{width:min(1080px,100%);margin:0 auto;padding:24px;display:grid;gap:16px}
     .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
     .top-right{display:grid;justify-items:end;gap:8px}
     h1,h2,h3,p{margin:0}
-    h1{font-size:30px;line-height:1}
-    h2{font-size:15px;margin-bottom:10px}
-    h3{font-size:14px;margin-bottom:8px}
+    h1{font-size:30px;line-height:1;font-weight:600;letter-spacing:-0.015em}
+    h2{font-size:15px;margin-bottom:10px;font-weight:600;letter-spacing:-0.005em}
+    h3{font-size:14px;margin-bottom:8px;font-weight:600;letter-spacing:-0.005em}
     .subtitle,.muted{color:var(--muted)}
     .subtitle{margin-top:6px;font-size:13px}
     .stamp,.log{color:var(--muted);font:13px/1.55 var(--font)}
+    .stamp,.value,.pace-value{font-variant-numeric:tabular-nums}
     .main-grid{display:grid;grid-template-columns:520px 1fr;gap:14px;align-items:start}
     .side-stack{display:grid;gap:14px}
-    .panel{border:1px solid var(--line);padding:14px}
+    .panel{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:18px}
     .prediction-panel{position:relative}
     .panel-head{margin-bottom:10px}
     .prediction-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-right:150px}
     .prediction-head h2{margin-bottom:0}
     .panel-actions{display:grid;gap:8px;margin-bottom:10px}
-    .engine-label{position:absolute;right:14px;top:16px;color:#777;font:12px/1 var(--font);white-space:nowrap}
+    .engine-label{position:absolute;right:18px;top:20px;color:var(--muted-soft);font:12px/1 var(--font);white-space:nowrap}
     .controls,.subject-inputs,.records{display:grid;gap:10px}
-    .form-shell{display:grid;gap:10px;border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
-    .form-shell.hidden{display:none}
+    .form-shell{display:grid;gap:10px;border-top:1px solid var(--line);margin-top:12px;padding-top:12px;max-height:2400px;opacity:1;overflow:hidden;transition:max-height 220ms ease,opacity 160ms ease,margin 160ms ease,padding 160ms ease,border-color 160ms ease}
+    .form-shell.hidden{max-height:0;opacity:0;pointer-events:none;margin-top:0;padding-top:0;border-top-color:transparent}
     .form-error{color:var(--muted);font:13px/1.4 var(--font);min-height:18px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .cut-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-    .percentile-grid{display:grid;grid-template-columns:minmax(120px,220px);gap:8px;margin-top:8px}
-    .percentile-grid.hidden,.cut-grid.hidden,.skip4-option.hidden{display:none}
+    .cut-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;max-height:220px;opacity:1;overflow:hidden;transition:max-height 180ms ease,opacity 160ms ease,margin 160ms ease}
+    .percentile-grid{display:grid;grid-template-columns:minmax(120px,220px);gap:8px;margin-top:8px;max-height:90px;opacity:1;overflow:hidden;transition:max-height 180ms ease,opacity 160ms ease,margin 160ms ease}
+    .percentile-grid.hidden,.cut-grid.hidden{max-height:0;opacity:0;pointer-events:none;margin-top:0}
+    .skip4-option.hidden{display:none}
     label{display:grid;gap:5px;color:var(--muted);font-size:12px}
-    .field-note{color:#777;font-size:11px;line-height:1.35}
+    .field-note{color:var(--muted-soft);font-size:11px;line-height:1.35}
     .checkline{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px}
-    .checkline input{appearance:none;-webkit-appearance:none;accent-color:#fff;width:15px;height:15px;padding:0;border:1px solid #fff;background-color:#000;color:#fff;display:grid;place-items:center;forced-color-adjust:none}
-    .checkline input:checked{background-color:#000;border-color:#fff}
-    .checkline input:checked::after{content:"";width:7px;height:7px;background-color:#fff;display:block}
-    input,button,select{width:100%;padding:10px;border:1px solid #fff;border-radius:0;background-color:#000;color:#fff;font:inherit;accent-color:#fff;-webkit-text-fill-color:#fff}
-    input:disabled,select:disabled{border-color:#555;color:#666;background-color:#000;-webkit-text-fill-color:#666;opacity:1}
+    .checkline input{appearance:none;-webkit-appearance:none;accent-color:var(--text);width:15px;height:15px;padding:0;border:1px solid var(--line-strong);border-radius:4px;background-color:var(--surface);color:var(--text);display:grid;place-items:center;forced-color-adjust:none;transition:background-color 160ms ease,border-color 160ms ease,opacity 160ms ease}
+    .checkline input:checked{background-color:var(--surface);border-color:var(--text)}
+    .checkline input:checked::after{content:"";width:7px;height:7px;background-color:var(--text);border-radius:2px;display:block}
+    input,button,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background-color:var(--surface);color:var(--text);font:inherit;accent-color:var(--text);-webkit-text-fill-color:var(--text)}
+    input:disabled,select:disabled{border-color:var(--line-dim);color:var(--muted-soft);background-color:var(--line-dim);-webkit-text-fill-color:var(--muted-soft);opacity:1}
     button{cursor:pointer;font-weight:700}
-    button:hover{background:#fff;color:#000}
+    button:hover{background:var(--text);border-color:var(--text);color:var(--bg);-webkit-text-fill-color:var(--bg)}
+    button:focus-visible{outline-color:var(--text)}
     .settings-button{width:auto;border:0;padding:0;background:transparent;color:var(--text);display:flex;align-items:center;gap:6px;font-size:13px}
-    .settings-button:hover{background:transparent;color:var(--muted)}
+    .settings-button:hover{background:transparent;color:var(--muted);-webkit-text-fill-color:var(--muted)}
     .settings-button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,max-content));gap:10px;align-items:stretch}
+    button,input,select,.card,.panel,.record,.settings-button{transition:background-color 160ms ease,border-color 160ms ease,color 160ms ease,transform 160ms ease,opacity 160ms ease}
+    .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,max-content));gap:12px;align-items:stretch}
     .prediction-kpi{grid-template-columns:repeat(auto-fit,minmax(136px,max-content));align-items:start;margin-bottom:14px}
     .prediction-kpi .card{min-width:136px}
-    .card{border:1px solid var(--line);padding:12px;min-height:74px}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;min-height:74px}
+    .prediction-panel .card:first-child{border-color:var(--line-strong)}
     .card p{color:var(--muted);font-size:12px;margin-bottom:8px}
-    .value{font:800 22px/1.1 var(--font);word-break:keep-all;white-space:normal}
-    .pace-value{display:flex;align-items:center;gap:8px;font:800 18px/1.2 var(--font)}
+    .value{font:700 20px/1.1 var(--font);word-break:keep-all;white-space:normal}
+    #total-gems{font-size:26px}
+    #progress-rate,#forecast-date,#confidence,#bottleneck{font-size:20px}
+    .pace-value{display:flex;align-items:center;gap:8px;font:700 26px/1.2 var(--font)}
     .pace-trend{color:var(--muted);font:12px/1.2 var(--font);margin-top:6px}
-    .pace-icon{width:18px;height:18px;display:inline-grid;place-items:center;color:#fff;flex:0 0 auto}
+    .pace-icon{width:18px;height:18px;display:inline-grid;place-items:center;color:var(--text);flex:0 0 auto}
     .pace-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .pace-icon.star{color:var(--accent)}
     .pace-icon.star svg{fill:currentColor;stroke:currentColor}
-    .subject-card{border:1px solid var(--line);padding:10px;min-width:0}
+    .pace-icon.warning{color:var(--warn)}
+    .subject-card{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
+    .subject-card:hover,.record:hover{background:var(--surface-hover);border-color:var(--line-strong);transform:translateY(-1px)}
     .subject-options{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;margin-bottom:8px}
     .subject-options .checkline{white-space:nowrap}
-    .subject-card.off{border-color:#555}
+    .subject-card.off{border-color:var(--line-dim);opacity:.76}
     .subject-bars{display:grid;gap:8px;margin-top:10px}
     .subject-row{display:grid;grid-template-columns:52px 1fr 64px;gap:8px;align-items:center;font-size:13px}
-    .bar{height:10px;border:1px solid #fff;background-color:#000;forced-color-adjust:none}
-    .bar span{display:block;height:100%;background-color:#fff;forced-color-adjust:none}
-    .record{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;border:1px solid var(--line);padding:9px;font-size:13px}
+    .bar{height:10px;border:1px solid var(--line);border-radius:999px;background-color:var(--surface);forced-color-adjust:none;overflow:hidden}
+    .bar span{display:block;height:100%;background-color:var(--text);border-radius:999px;forced-color-adjust:none;transition:width 600ms cubic-bezier(0.22,1,0.36,1)}
+    .record{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px;font-size:13px}
     .record small{display:block;color:var(--muted);margin-top:3px}
     .record button{padding:7px 9px}
     #new-record-slot:not(:empty){margin-bottom:10px}
     .record-form-slot{min-width:0}
     .record-form-slot:empty{display:none}
-    .record-form-slot .form-shell{border:1px solid var(--line);margin:0 0 4px;padding:12px}
-    .editing-mark{color:#777;font-size:11px;font-weight:500;margin-left:6px}
+    .record-form-slot .form-shell{border:1px solid var(--line);border-radius:10px;margin:0 0 4px;padding:12px}
+    .record-form-slot .form-shell.hidden{margin:0;padding:0;border-color:transparent}
+    .editing-mark{color:var(--muted-soft);font-size:11px;font-weight:500;margin-left:6px}
     .log{white-space:pre-wrap}
     .prediction-panel .log{min-height:0}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:start center;padding:72px 18px;z-index:10}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:grid;place-items:start center;padding:72px 18px;z-index:10}
     .modal.hidden{display:none}
-    .settings-panel{width:min(720px,100%);max-height:calc(100vh - 120px);overflow:auto;background:#000;border:1px solid var(--line);padding:14px;display:grid;gap:12px}
+    .modal:not(.hidden) .settings-panel{animation:modal-in 180ms ease-out}
+    .settings-panel{width:min(720px,100%);max-height:calc(100vh - 120px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px}
     .settings-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .settings-head h2{margin:0}
     .icon-button{width:auto;padding:7px 10px}
     .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    details{border-top:1px solid var(--line);padding-top:10px}
+    details{border-top:1px solid var(--line-dim);padding-top:10px}
     summary{cursor:pointer;font-weight:700;margin-bottom:10px}
+    @keyframes modal-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
     @media (max-width:960px){.main-grid,.row,.cut-grid,.percentile-grid{grid-template-columns:1fr}.top{align-items:start;display:grid;grid-template-columns:auto minmax(0,1fr)}.top-right{justify-items:end;text-align:right}.stamp{font-size:12px;line-height:1.35}.main-grid>aside{order:2}.side-stack{order:1}.kpi{grid-template-columns:repeat(auto-fit,minmax(128px,1fr))}.prediction-head{padding-right:0}.engine-label{position:static}.record{grid-template-columns:1fr}}
     @media (max-width:640px){.settings-grid{grid-template-columns:1fr}.wrap{padding:18px}.top{gap:10px}.settings-button{font-size:12px}.settings-button svg{width:15px;height:15px}}
   </style>
@@ -95,7 +110,7 @@
     <header class="top">
       <div>
         <h1>glassjar</h1>
-        <p class="subtitle">alpha 0.5.0</p>
+        <p class="subtitle">1.0 Public Beta 1</p>
       </div>
       <div class="top-right">
         <button class="settings-button" id="open-settings" type="button" aria-haspopup="dialog">
@@ -232,7 +247,17 @@
     const EXAM_DAY = new Date("2026-11-19T00:00:00+09:00");
     const ENGINE_GAMMA = 1.25;
     const ENGINE_NAME = "Mandarin 1.2 Pro";
-    const STORAGE_KEY = "glassjar.0.5.0";
+    const STORAGE_KEY = "glassjar.1.0-public-beta-1";
+    const OLD_STORAGE_KEYS = [
+      "glassjar.0.5.2", "glassjar.0.5.1.1", "glassjar.0.5.1", "glassjar.0.5.0", "glassjar.0.4.5", "glassjar.0.4.4.7",
+      "glassjar.0.4.4.6a", "glassjar.0.4.4.6", "glassjar.0.4.4.5", "glassjar.0.4.4.4", "glassjar.0.4.4.3",
+      "glassjar.0.4.4.2", "glassjar.0.4.4.1", "glassjar.0.4.4", "glassjar.0.4.3.4", "glassjar.0.4.3.3",
+      "glassjar.0.4.3.2", "glassjar.0.4.3.1", "glassjar.0.4.3", "glassjar.0.4.2.2", "glassjar.0.4.2.1",
+      "glassjar.0.4.2", "glassjar.0.4.1.1", "glassjar.0.4.1", "glassjar.0.4.0", "glassjar.0.3.1",
+      "glassjar.0.3.0", "glassjar.0.2.4.3", "glassjar.0.2.4.2", "glassjar.0.2.4.1", "glassjar.0.2.4",
+      "glassjar.0.2.3", "glassjar.0.2.2", "glassjar.0.2.1", "glassjar.0.2.0", "glassjar.0.1.5.1",
+      "glassjar.0.1.5", "glassjar.0.1.4", "glassjar.0.1.3"
+    ];
     const MODEL_EPSILON_FALLBACK = 1e-6;
     const MODEL_SAFE_SIGMA_WEIGHT = 0.5;
     const DEFAULT_SUBJECTS = {
@@ -270,9 +295,13 @@
     });
 
     function migrateState() {
-      if (localStorage.getItem(STORAGE_KEY)) return;
-      const old = localStorage.getItem("glassjar.0.4.5") || localStorage.getItem("glassjar.0.4.4.7") || localStorage.getItem("glassjar.0.4.4.6a") || localStorage.getItem("glassjar.0.4.4.6") || localStorage.getItem("glassjar.0.4.4.5") || localStorage.getItem("glassjar.0.4.4.4") || localStorage.getItem("glassjar.0.4.4.3") || localStorage.getItem("glassjar.0.4.4.2") || localStorage.getItem("glassjar.0.4.4.1") || localStorage.getItem("glassjar.0.4.4") || localStorage.getItem("glassjar.0.4.3.4") || localStorage.getItem("glassjar.0.4.3.3") || localStorage.getItem("glassjar.0.4.3.2") || localStorage.getItem("glassjar.0.4.3.1") || localStorage.getItem("glassjar.0.4.3") || localStorage.getItem("glassjar.0.4.2.2") || localStorage.getItem("glassjar.0.4.2.1") || localStorage.getItem("glassjar.0.4.2") || localStorage.getItem("glassjar.0.4.1.1") || localStorage.getItem("glassjar.0.4.1") || localStorage.getItem("glassjar.0.4.0") || localStorage.getItem("glassjar.0.3.1") || localStorage.getItem("glassjar.0.3.0") || localStorage.getItem("glassjar.0.2.4.3") || localStorage.getItem("glassjar.0.2.4.2") || localStorage.getItem("glassjar.0.2.4.1") || localStorage.getItem("glassjar.0.2.4") || localStorage.getItem("glassjar.0.2.3") || localStorage.getItem("glassjar.0.2.2") || localStorage.getItem("glassjar.0.2.1") || localStorage.getItem("glassjar.0.2.0") || localStorage.getItem("glassjar.0.1.5.1") || localStorage.getItem("glassjar.0.1.5") || localStorage.getItem("glassjar.0.1.4") || localStorage.getItem("glassjar.0.1.3");
-      if (old) localStorage.setItem(STORAGE_KEY, old);
+      try {
+        if (localStorage.getItem(STORAGE_KEY)) return;
+        const old = OLD_STORAGE_KEYS.map((key) => localStorage.getItem(key)).find(Boolean);
+        if (old) localStorage.setItem(STORAGE_KEY, old);
+      } catch {
+        // Storage can be unavailable in private browsing; loadState will fall back to defaults.
+      }
     }
 
     function loadState() {
@@ -287,7 +316,11 @@
     }
 
     function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ records: state.records, settings: state.settings }));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ records: state.records, settings: state.settings }));
+      } catch {
+        throw new Error("브라우저 저장 공간을 사용할 수 없습니다.");
+      }
     }
 
     function cloneSettings(settings) {
@@ -421,7 +454,7 @@
     }
 
     function initDate() {
-      $("#exam-date").value = new Date().toISOString().slice(0, 10);
+      $("#exam-date").value = kstDateString();
     }
 
     function bindEvents() {
@@ -433,6 +466,7 @@
       $("#settings-modal").addEventListener("click", (event) => {
         if (event.target.id === "settings-modal") closeSettings();
       });
+      document.addEventListener("keydown", handleDocumentKeydown);
       $("#settings-form").addEventListener("submit", handleSettingsSubmit);
       $("#reset-settings").addEventListener("click", resetSettings);
       bindSubjectEvents();
@@ -449,14 +483,23 @@
     function openSettings() {
       fillSettingsForm();
       $("#settings-modal").classList.remove("hidden");
+      document.querySelector(`[name="target-korean"]`)?.focus();
     }
 
     function closeSettings() {
       $("#settings-modal").classList.add("hidden");
+      $("#open-settings").focus();
+    }
+
+    function handleDocumentKeydown(event) {
+      if (event.key === "Escape" && !$("#settings-modal").classList.contains("hidden")) {
+        closeSettings();
+      }
     }
 
     function handleSettingsSubmit(event) {
       event.preventDefault();
+      const previousSettings = cloneSettings(state.settings);
       try {
         state.settings = readSettingsForm(new FormData(event.currentTarget));
         applySettings();
@@ -468,19 +511,28 @@
         render();
         closeSettings();
       } catch (error) {
+        state.settings = previousSettings;
+        applySettings();
         $("#settings-error").textContent = error.message;
       }
     }
 
     function resetSettings() {
-      state.settings = cloneSettings(DEFAULT_SETTINGS);
-      applySettings();
-      saveState();
-      buildSettingsFields();
-      buildSubjectFields();
-      bindSubjectEvents();
-      resetForm();
-      render();
+      const previousSettings = cloneSettings(state.settings);
+      try {
+        state.settings = cloneSettings(DEFAULT_SETTINGS);
+        applySettings();
+        saveState();
+        buildSettingsFields();
+        buildSubjectFields();
+        bindSubjectEvents();
+        resetForm();
+        render();
+      } catch (error) {
+        state.settings = previousSettings;
+        applySettings();
+        $("#settings-error").textContent = error.message;
+      }
     }
 
     function readSettingsForm(form) {
@@ -508,6 +560,7 @@
 
     function handleSubmit(event) {
       event.preventDefault();
+      const previousRecords = [...state.records];
       try {
         const record = buildRecord(new FormData(event.currentTarget), state.editingId);
         if (state.editingId) {
@@ -520,6 +573,7 @@
         resetForm();
         render();
       } catch (error) {
+        state.records = previousRecords;
         $("#form-error").textContent = error.message;
       }
     }
@@ -557,6 +611,7 @@
         const skip4 = !!form.get(`${key}-skip4`);
         const cutoffs = [1, 2, 3].map((grade) => requiredNumber(form, `${key}-cut${grade}`, `${appSubjectLabel(key)} ${grade}컷`));
         if (!skip4) cutoffs.push(requiredNumber(form, `${key}-cut4`, `${appSubjectLabel(key)} 4컷`));
+        validateCutoffInputs(key, raw, cutoffs);
         const percentile = estimatePercentile(raw, cutoffs);
         scores[key] = { taken: true, inputMode: "cutoffs", raw, cutoffs, percentile, skip4 };
         gems[key] = percentileToGems(percentile, subject);
@@ -578,6 +633,21 @@
       const value = Number(raw);
       if (!Number.isFinite(value)) throw new Error(`${label} 입력값을 확인해야 합니다.`);
       return value;
+    }
+
+    function validateCutoffInputs(key, raw, cutoffs) {
+      const label = appSubjectLabel(key);
+      validateScoreRange(raw, `${label} 원점수`);
+      cutoffs.forEach((cutoff, index) => validateScoreRange(cutoff, `${label} ${index + 1}컷`));
+      for (let index = 1; index < cutoffs.length; index += 1) {
+        if (cutoffs[index] > cutoffs[index - 1]) {
+          throw new Error(`${label} 등급컷은 1컷부터 낮아지는 순서여야 합니다.`);
+        }
+      }
+    }
+
+    function validateScoreRange(value, label) {
+      if (value < 0 || value > 100) throw new Error(`${label}은 0~100 사이여야 합니다.`);
     }
 
     function estimatePercentile(raw, cutoffs) {
@@ -633,13 +703,17 @@
     }
 
     function totalGems(record) {
-      if (!record) return 0;
-      return subjectKeys.reduce((sum, key) => {
-        const score = record.scores[key];
-        if (!score) return sum;
-        if (SUBJECTS[key].type === "english") return sum + englishGems(score.grade);
-        return sum + percentileToGems(score.percentile, SUBJECTS[key]);
-      }, 0);
+      return record ? totalScoreGems(record.scores) : 0;
+    }
+
+    function totalScoreGems(scores) {
+      return subjectKeys.reduce((sum, key) => sum + scoreGems(key, scores?.[key]), 0);
+    }
+
+    function scoreGems(key, score) {
+      if (!score) return 0;
+      if (SUBJECTS[key].type === "english") return englishGems(score.grade);
+      return percentileToGems(score.percentile, SUBJECTS[key]);
     }
 
     function render() {
@@ -696,10 +770,17 @@
       });
       document.querySelectorAll("[data-delete]").forEach((button) => {
         button.addEventListener("click", () => {
-          state.records = state.records.filter((record) => record.id !== button.dataset.delete);
-          saveState();
-          if (state.editingId === button.dataset.delete) resetForm();
-          render();
+          const previousRecords = state.records;
+          try {
+            const nextRecords = state.records.filter((record) => record.id !== button.dataset.delete);
+            state.records = nextRecords;
+            saveState();
+            if (state.editingId === button.dataset.delete) resetForm();
+            render();
+          } catch (error) {
+            state.records = previousRecords;
+            $("#form-error").textContent = error.message;
+          }
         });
       });
       placeFormShell();
@@ -714,13 +795,12 @@
       const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
       const subjectState = buildSubjectState(sorted);
       const actualGem = subjectKeys.reduce((sum, key) => sum + subjectState[key].actualGem, 0);
-      const predictedSubjects = subjectState;
       const pace = distancePaceStatus(sorted);
       const paceTrend = distancePaceTrend(sorted);
       const forecastDate = forecastGoalDateFromRecords(sorted);
       const confidence = distanceModelConfidence(sorted);
       const bottlenecks = distanceBottlenecks(sorted);
-      const byTargetDay = forecastDate && dateValue(forecastDate) <= targetDay().getTime() ? "목표일 전 100% 도달권" : "목표일 이후 도달 예상";
+      const byTargetDay = !forecastDate ? "예측 데이터 부족" : dateValue(forecastDate) <= targetDay().getTime() ? "목표일 전 100% 도달권" : "목표일 이후 도달 예상";
       const forecastLabel = forecastDate || "미도달 예상";
       return {
         actualGem,
@@ -749,22 +829,12 @@
           label: appSubjectLabel(key),
           targetUnits: target,
           actualUnits: latest ? latest.units : 0,
-          actualGem: unitsToSubjectGem(latest ? latest.units : 0, key),
+          actualGem: latest ? latest.gem : 0,
           observed: !!latest,
           points
         };
         return acc;
       }, {});
-    }
-
-    function buildBaselineState(records) {
-      const baseline = records[0] || null;
-      if (!baseline) return { date: null, units: 0, gem: 0 };
-      const units = recordUnits(baseline);
-      return {
-        date: baseline.date,
-        units
-      };
     }
 
     function subjectPoints(key, records) {
@@ -776,7 +846,9 @@
           return {
             date: record.date,
             units: percentileUnits(clamp(percentile, 0, SUBJECTS[key].target)),
-            percentile
+            percentile,
+            gem: scoreGems(key, score),
+            progress: subjectScoreProgress(key, score)
           };
         })
         .sort((a, b) => a.date.localeCompare(b.date));
@@ -800,9 +872,9 @@
     }
 
     function recordProgress(record) {
-      const target = totalTargetUnits();
+      const target = totalGemSlots();
       if (!record || !target) return 0;
-      return clamp(recordUnits(record) / target, 0, 1);
+      return clamp(totalGems(record) / target, 0, 1);
     }
 
     function subjectProgress(key, units) {
@@ -811,23 +883,33 @@
       return clamp(units / target, 0, 1);
     }
 
+    function subjectScoreProgress(key, score) {
+      const slots = SUBJECTS[key].slots;
+      if (!slots) return 0;
+      return clamp(scoreGems(key, score) / slots, 0, 1);
+    }
+
     function modelPoints(records) {
       const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
-      const deduped = [];
+      const points = [];
+      const scores = {};
       sorted.forEach((record) => {
-        const last = deduped.at(-1);
-        if (last && last.date === record.date) deduped[deduped.length - 1] = record;
-        else deduped.push(record);
-      });
-      return deduped.map((record) => {
-        const progress = recordProgress(record);
-        return {
+        Object.entries(record.scores || {}).forEach(([key, score]) => {
+          scores[key] = score;
+        });
+        const progress = clamp(totalScoreGems(scores) / totalGemSlots(), 0, 1);
+        const point = {
           date: record.date,
           day: dateValue(record.date) / 86400000,
           progress,
           distance: progressToDistance(progress)
         };
+        const last = points.at(-1);
+        // Same-day records are merged into one daily model point; later entries win per subject.
+        if (last && last.date === record.date) points[points.length - 1] = point;
+        else points.push(point);
       });
+      return points;
     }
 
     function velocitySamples(points) {
@@ -865,17 +947,17 @@
     function forecastDateByDistance(currentDistance, velocity) {
       const target = targetModelDistance();
       const remaining = Math.max(0, target - currentDistance);
-      if (remaining <= 0) return new Date().toISOString().slice(0, 10);
+      if (remaining <= 0) return kstDateString();
       if (!Number.isFinite(velocity) || velocity <= MODEL_EPSILON_FALLBACK) return null;
       const days = remaining / velocity;
-      return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+      return kstDateString(new Date(Date.now() + days * 86400000));
     }
 
     function forecastGoalDateFromRecords(records) {
       const points = modelPoints(records);
       if (!points.length) return null;
       const latest = points.at(-1);
-      if (latest.progress >= 1 - modelEpsilon()) return new Date().toISOString().slice(0, 10);
+      if (latest.progress >= 1 - modelEpsilon()) return kstDateString();
       const samples = velocitySamples(points);
       const velocity = weightedVelocity(samples);
       if (points.length < 2 || velocity === null || velocity <= MODEL_EPSILON_FALLBACK) return null;
@@ -996,24 +1078,23 @@
       const icons = {
         star: `<span class="pace-icon star" aria-label="초과"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8-5.1-4.7 6.9-.8L12 2z"></path></svg></span>`,
         check: `<span class="pace-icon" aria-label="정상"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg></span>`,
-        warning: `<span class="pace-icon" aria-label="부족"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 9v5"></path><path d="M12 17h.01"></path></svg></span>`
+        warning: `<span class="pace-icon warning" aria-label="부족"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 9v5"></path><path d="M12 17h.01"></path></svg></span>`
       };
       return icons[status] || icons.check;
     }
 
     function subjectForecastDate(key, records) {
       const points = subjectPoints(key, records).map((point) => {
-        const progress = subjectProgress(key, point.units);
         return {
           date: point.date,
           day: dateValue(point.date) / 86400000,
-          progress,
-          distance: progressToDistance(progress)
+          progress: point.progress,
+          distance: progressToDistance(point.progress)
         };
       });
       if (points.length < 2) return null;
       const latest = points.at(-1);
-      if (latest.progress >= 1 - modelEpsilon()) return new Date().toISOString().slice(0, 10);
+      if (latest.progress >= 1 - modelEpsilon()) return kstDateString();
       const samples = velocitySamples(points);
       const velocity = weightedVelocity(samples);
       return forecastDateByDistance(latest.distance, velocity);
@@ -1021,19 +1102,41 @@
 
     function distanceBottlenecks(records) {
       return subjectKeys
-        .map((key) => {
-          const date = subjectForecastDate(key, records);
-          return {
-            key,
-            label: appSubjectLabel(key),
-            date,
-            value: date ? dateValue(date) : -Infinity
-          };
+        .map((key) => subjectBottleneckScore(key, records))
+        .filter(Boolean)
+        .sort((a, b) => {
+          if (a.stalled !== b.stalled) return a.stalled ? -1 : 1;
+          return b.value - a.value;
         })
-        .filter((item) => item.date)
-        .sort((a, b) => b.value - a.value)
         .slice(0, 2)
         .map((item) => item.label);
+    }
+
+    function subjectBottleneckScore(key, records) {
+      const points = subjectPoints(key, records).map((point) => {
+        return {
+          date: point.date,
+          day: dateValue(point.date) / 86400000,
+          progress: point.progress,
+          distance: progressToDistance(point.progress)
+        };
+      });
+      const latest = points.at(-1);
+      if (!latest || latest.progress >= 1 - modelEpsilon()) return null;
+
+      const gap = 1 - latest.progress;
+      if (points.length < 2) {
+        return { key, label: appSubjectLabel(key), value: gap, stalled: false };
+      }
+
+      const velocity = weightedVelocity(velocitySamples(points));
+      if (velocity === null || velocity <= MODEL_EPSILON_FALLBACK) {
+        return { key, label: appSubjectLabel(key), value: gap, stalled: true };
+      }
+
+      const date = forecastDateByDistance(latest.distance, velocity);
+      const value = date ? dateValue(date) : Number.POSITIVE_INFINITY;
+      return { key, label: appSubjectLabel(key), value: value + gap, stalled: false };
     }
 
     function forecastErrorRangeDays(records) {
@@ -1109,19 +1212,6 @@
         const percentile = SUBJECTS[key].type === "english" ? englishPercentile(score.grade) : score.percentile;
         return sum + percentileUnits(clamp(percentile, 0, SUBJECTS[key].target));
       }, 0);
-    }
-
-    function unitsToGemAbsolute(units) {
-      return Math.round((clamp(units, 0, totalTargetUnits()) / totalTargetUnits()) * totalGemSlots());
-    }
-
-    function unitsToGemDelta(units) {
-      return (units / totalTargetUnits()) * totalGemSlots();
-    }
-
-    function unitsToSubjectGem(units, key) {
-      const subject = SUBJECTS[key];
-      return Math.round((clamp(units, 0, subjectTargetUnits(key)) / subjectTargetUnits(key)) * subject.slots);
     }
 
     function dateValue(date) {
@@ -1275,14 +1365,13 @@
       $("#countdown").textContent = `${label} ${days}일 ${hours}시간 ${minutes}분 ${seconds}초 남음`;
     }
 
-    function timeText() {
-      return new Intl.DateTimeFormat("en-GB", {
+    function kstDateString(date = new Date()) {
+      return new Intl.DateTimeFormat("en-CA", {
         timeZone: "Asia/Seoul",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
-      }).format(new Date());
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(date);
     }
 
     function clamp(value, min, max) {
