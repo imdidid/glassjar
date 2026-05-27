@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>glassjar 1.0 Public Beta 1</title>
+  <title>glassjar 1.0 Public Beta 1a</title>
   <style>
     :root{--bg:#0b0b0c;--surface:#131316;--surface-hover:#18181c;--line:#26262a;--line-strong:#3a3a40;--line-dim:#1c1c20;--text:#f1f1f3;--muted:#8e8e95;--muted-soft:#6a6a70;--accent:#a3e635;--warn:#f87171;--font:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark}
     *{box-sizing:border-box}
@@ -110,7 +110,7 @@
     <header class="top">
       <div>
         <h1>glassjar</h1>
-        <p class="subtitle">1.0 Public Beta 1</p>
+        <p class="subtitle">1.0 Public Beta 1a</p>
       </div>
       <div class="top-right">
         <button class="settings-button" id="open-settings" type="button" aria-haspopup="dialog">
@@ -247,9 +247,9 @@
     const EXAM_DAY = new Date("2026-11-19T00:00:00+09:00");
     const ENGINE_GAMMA = 1.25;
     const ENGINE_NAME = "Mandarin 1.2 Pro";
-    const STORAGE_KEY = "glassjar.1.0-public-beta-1";
+    const STORAGE_KEY = "glassjar.1.0-public-beta-1a";
     const OLD_STORAGE_KEYS = [
-      "glassjar.0.5.2", "glassjar.0.5.1.1", "glassjar.0.5.1", "glassjar.0.5.0", "glassjar.0.4.5", "glassjar.0.4.4.7",
+      "glassjar.1.0-public-beta-1", "glassjar.0.5.2", "glassjar.0.5.1.1", "glassjar.0.5.1", "glassjar.0.5.0", "glassjar.0.4.5", "glassjar.0.4.4.7",
       "glassjar.0.4.4.6a", "glassjar.0.4.4.6", "glassjar.0.4.4.5", "glassjar.0.4.4.4", "glassjar.0.4.4.3",
       "glassjar.0.4.4.2", "glassjar.0.4.4.1", "glassjar.0.4.4", "glassjar.0.4.3.4", "glassjar.0.4.3.3",
       "glassjar.0.4.3.2", "glassjar.0.4.3.1", "glassjar.0.4.3", "glassjar.0.4.2.2", "glassjar.0.4.2.1",
@@ -262,7 +262,7 @@
     const MODEL_SAFE_SIGMA_WEIGHT = 0.5;
     const DEFAULT_SUBJECTS = {
       korean: { label: "국어", slots: 28, target: 91, type: "percentile" },
-      math: { label: "수학", slots: 47, target: 98, type: "percentile" },
+      math: { label: "수학", slots: 47, target: 98, type: "percentile", difficultyGamma: 1.31 },
       english: { label: "영어", slots: 14, target: 100, type: "english" },
       bioethics: { label: "탐구1", slots: 21, target: 96, type: "percentile" },
       sociology: { label: "탐구2", slots: 21, target: 96, type: "percentile" }
@@ -679,7 +679,9 @@
     function percentileToGems(percentile, subject) {
       const targetUnits = percentileUnits(subject.target);
       const currentUnits = percentileUnits(clamp(percentile, 0, subject.target));
-      return Math.round((currentUnits / targetUnits) * subject.slots);
+      const ratio = currentUnits / targetUnits;
+      const adjustedRatio = subject.difficultyGamma ? ratio ** subject.difficultyGamma : ratio;
+      return Math.round(adjustedRatio * subject.slots);
     }
 
     function percentileUnits(percentile) {
